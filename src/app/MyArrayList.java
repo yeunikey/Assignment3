@@ -2,6 +2,8 @@ package app;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 
 public class MyArrayList<T> implements MyList<T> {
 
@@ -149,5 +151,45 @@ public class MyArrayList<T> implements MyList<T> {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
         }
     }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new Iterator<T>() {
+            private int currentIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return currentIndex < size;
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public T next() {
+                return (T) elements[currentIndex++];
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException("Remove not supported");
+            }
+        };
+    }
+
+    @Override
+    public void forEach(Consumer<? super T> action) {
+        for (int i = 0; i < size; i++) {
+            @SuppressWarnings("unchecked")
+            T element = (T) elements[i];
+            action.accept(element);
+        }
+    }
+
+    @Override
+    public Spliterator<T> spliterator() {
+        @SuppressWarnings("unchecked")
+        T[] array = (T[]) Arrays.copyOf(elements, size);
+        return Arrays.spliterator(array);
+    }
+
 
 }

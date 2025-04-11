@@ -2,6 +2,8 @@ package app;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 
 public class MyLinkedList<T> implements MyList<T> {
 
@@ -80,7 +82,6 @@ public class MyLinkedList<T> implements MyList<T> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public T get(int index) {
         return (T) getNode(index).data;
     }
@@ -204,5 +205,71 @@ public class MyLinkedList<T> implements MyList<T> {
         }
         return current;
     }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new Iterator<T>() {
+            private Node current = head;
+
+            @Override
+            public boolean hasNext() {
+                return current != null;
+            }
+
+            @Override
+            public T next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                T data = current.data;
+                current = current.next;
+                return data;
+            }
+        };
+    }
+
+    @Override
+    public void forEach(Consumer<? super T> action) {
+        Node current = head;
+        while (current != null) {
+            action.accept(current.data);
+            current = current.next;
+        }
+    }
+
+    @Override
+    public Spliterator<T> spliterator() {
+        return new Spliterator<T>() {
+            private Node current = head;
+            private int estimatedSize = size;
+
+            @Override
+            public boolean tryAdvance(Consumer<? super T> action) {
+                if (current == null) {
+                    return false;
+                }
+                action.accept(current.data);
+                current = current.next;
+                estimatedSize--;
+                return true;
+            }
+
+            @Override
+            public Spliterator<T> trySplit() {
+                return null;
+            }
+
+            @Override
+            public long estimateSize() {
+                return estimatedSize;
+            }
+
+            @Override
+            public int characteristics() {
+                return ORDERED | SIZED | SUBSIZED;
+            }
+        };
+    }
+
 
 }
